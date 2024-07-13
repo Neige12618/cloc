@@ -4,8 +4,9 @@ use crate::language_type::LanguageType;
 
 #[derive(Debug)]
 pub struct Counter {
-    pub comment: usize,
-    pub blank: usize,
+    pub files: usize,
+    pub comments: usize,
+    pub blanks: usize,
     pub code: usize,
 }
 
@@ -14,8 +15,9 @@ impl std::ops::Add for Counter {
 
     fn add(self, rhs: Counter) -> Counter {
         Counter {
-            comment: self.comment + rhs.comment,
-            blank: self.blank + rhs.blank,
+            files: self.files + rhs.files,
+            comments: self.comments + rhs.comments,
+            blanks: self.blanks + rhs.blanks,
             code: self.code + rhs.code,
         }
     }
@@ -24,14 +26,24 @@ impl std::ops::Add for Counter {
 impl Counter {
     pub fn new() -> Counter {
         Counter {
-            comment: 0,
-            blank: 0,
+            files: 1,
+            comments: 0,
+            blanks: 0,
+            code: 0,
+        }
+    }
+
+    pub fn none() -> Counter {
+        Counter {
+            files: 0,
+            comments: 0,
+            blanks: 0,
             code: 0,
         }
     }
 
     pub fn lines(&self) -> usize {
-        self.comment + self.blank + self.code
+        self.comments + self.blanks + self.code
     }
 }
 
@@ -49,9 +61,9 @@ pub fn count_lines(file_path: &PathBuf, language_type: LanguageType) -> std::io:
         let line = line.trim();
 
         if line.is_empty() {
-            counts.blank += 1;
+            counts.blanks += 1;
         } else if in_multiline_comment {
-            counts.comment += 1;
+            counts.comments += 1;
             for (_, end) in language_type.multi_line_comments() {
                 if line.ends_with(end) {
                     in_multiline_comment = false;
@@ -73,7 +85,7 @@ pub fn count_lines(file_path: &PathBuf, language_type: LanguageType) -> std::io:
 
             for comment in language_type.line_comment() {
                 if line.starts_with(comment) {
-                    counts.comment += 1;
+                    counts.comments += 1;
                     is_comment = true;
                     break;
                 }
@@ -82,7 +94,7 @@ pub fn count_lines(file_path: &PathBuf, language_type: LanguageType) -> std::io:
             if !is_comment {
                 for (start, end) in language_type.multi_line_comments() {
                     if line.starts_with(start) {
-                        counts.comment += 1;
+                        counts.comments += 1;
                         in_multiline_comment = !line.ends_with(end);
                         is_comment = true;
                         break;
@@ -122,7 +134,7 @@ mod test {
         )
         .unwrap();
         assert_eq!(counts.code, 5);
-        assert_eq!(counts.comment, 9);
-        assert_eq!(counts.blank, 3);
+        assert_eq!(counts.comments, 9);
+        assert_eq!(counts.blanks, 3);
     }
 }
