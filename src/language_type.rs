@@ -1,19 +1,32 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
+
+use crate::state::{CodeState, LineType};
+
 #[derive(PartialEq)]
 pub enum LanguageType {
     Cpp,
     Ruby,
 }
 
+static CPP_QUOTE_RE: Lazy<Vec<Regex>> = Lazy::new(|| {
+    LanguageType::Cpp
+        .quotes()
+        .iter()
+        .map(|q| Regex::new(&format!("{}(.*?){}", q.0, q.1)).unwrap())
+        .collect()
+});
+static RUBY_QUOTE_RE: Lazy<Vec<Regex>> = Lazy::new(|| {
+    LanguageType::Ruby
+        .quotes()
+        .iter()
+        .map(|q| Regex::new(&format!("{}(.*?){}", q.0, q.1)).unwrap())
+        .collect()
+});
+
 type StaticStr = &'static str;
 
 impl LanguageType {
-    pub fn name(&self) -> StaticStr {
-        match self {
-            LanguageType::Cpp => "C++",
-            LanguageType::Ruby => "Ruby",
-        }
-    }
-
     pub fn line_comment(&self) -> &'static [StaticStr] {
         match self {
             LanguageType::Cpp => &["//"],
@@ -35,6 +48,13 @@ impl LanguageType {
         }
     }
 
+    pub fn quotes_regex(&self) -> &'static Vec<Regex> {
+        match self {
+            LanguageType::Cpp => &CPP_QUOTE_RE,
+            LanguageType::Ruby => &RUBY_QUOTE_RE,
+        }
+    }
+
     pub fn verbatim_quotes(&self) -> &'static [(StaticStr, StaticStr)] {
         match self {
             LanguageType::Cpp => &[("R\"(", ")\"")],
@@ -51,20 +71,83 @@ impl LanguageType {
     }
 }
 
-impl std::str::FromStr for LanguageType {
-    type Err = &'static str;
+impl LanguageType {
+    pub fn parse_line(&self, line: &str, prev: CodeState) -> (CodeState, LineType) {
+        let line = line.trim();
+        if line.is_empty() {
+            return (prev, LineType::Blank);
+        }
 
-    fn from_str(from: &str) -> Result<Self, Self::Err> {
-        match &*from.to_lowercase() {
-            "cpp" => Ok(LanguageType::Cpp),
-            "ruby" => Ok(LanguageType::Ruby),
-            _ => Err("Unknown language type"),
+        match prev {
+            CodeState::InMultilineComent => {
+                for mlc in self.multi_line_comments() {
+                    if line.contains(mlc.1) {
+                        if line.ends_with(mlc.1) {
+                            return (CodeState::Other, LineType::Comment);
+                        } else {
+                            return (CodeState::Other, LineType::Code);
+                        }
+                    }
+                }
+                (CodeState::InMultilineComent, LineType::Comment)
+            }
+            CodeState::InVerbatimQuote => {
+                for vq in self.verbatim_quotes() {
+                    if line.contains(vq.1) {
+                        return (CodeState::Other, LineType::Code);
+                    }
+                }
+                (CodeState::InVerbatimQuote, LineType::Code)
+            }
+            CodeState::Other => {
+                let regex = self.quotes_regex();
+                let mut line = line.to_string();
+                for re in regex {
+                    line = re.replace_all(&line, "\"\"").to_string();
+                }
+                if self.line_comment().iter().any(|s| line.starts_with(s)) {
+                    return (CodeState::Other, LineType::Comment);
+                }
+                for mlc in self.multi_line_comments() {
+                    if let Some(p) = line.find(mlc.0) {
+                        if let Some(q) = line.find(mlc.1) {
+                            if p == 0 && q + mlc.1.len() == line.len() {
+                                return (CodeState::Other, LineType::Comment);
+                            } else {
+                                return (CodeState::Other, LineType::Code);
+                            }
+                        } else {
+                            if p == 0 {
+                                return (CodeState::InMultilineComent, LineType::Comment);
+                            } else {
+                                return (CodeState::InMultilineComent, LineType::Code);
+                            }
+                        }
+                    }
+                }
+                for ele in self.verbatim_quotes() {
+                    if line.contains(ele.0) && !line.ends_with(ele.1) {
+                        return (CodeState::InVerbatimQuote, LineType::Code);
+                    }
+                }
+                (CodeState::Other, LineType::Code)
+            }
         }
     }
 }
 
-impl std::fmt::Display for LanguageType {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.name())
+#[cfg(test)]
+mod test {
+    use super::LanguageType;
+
+    #[test]
+    fn test_regex() {
+        let lt = LanguageType::Cpp;
+        let s = r#"string s = "hello";"#;
+
+        for re in lt.quotes_regex() {
+            let s = re.replace(&s, "");
+            assert_eq!(s, "string s = ;")
+        }
     }
 }

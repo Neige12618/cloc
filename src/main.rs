@@ -9,6 +9,7 @@ use walker::DirWalker;
 mod cli;
 mod counter;
 mod language_type;
+mod state;
 mod table;
 mod walker;
 
