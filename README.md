@@ -1,10 +1,12 @@
 # 代码行数统计工具
 
+实现了 python、ruby、cpp 的代码行数统计工具。
+
 ## 构建
 
 ### 环境配置
 
-首先需要在电脑中安装 rust，对于国内网络，可以使用字节跳动提供的镜像。
+首先需要在电脑中安装 rust，对于国内网络，可以使用字节跳动提供的镜像。如果可以流畅访问外网，可以参考[入门 - Rust 程序设计语言](https://www.rust-lang.org/zh-CN/learn/get-started)。
 
 步骤一：设置 Rustup 镜像， 修改配置 `~/.zshrc` 或者 `~/.bashrc`
 
@@ -50,15 +52,17 @@ cargo --version
 cargo install --path . --locked
 ```
 
-即可成功安装命令行工具`rloc`
+即可成功安装命令行工具`cloc`
+
+如果未能成功安装，运行`cargo b --release`之后在当前目录的 `target/release` 目录下找到 cloc 二进制文件即可。
 
 ## 使用
 
-运行`rloc --help`即可查看帮助信息。
+运行`cloc --help`即可查看帮助信息。
 
 ```bash
-$ rloc --help
-Usage: rloc [OPTIONS] [NAME]
+$ cloc --help
+Usage: cloc [OPTIONS] [NAME]
 
 Arguments:
   [NAME]  需要被计算代码行数的文件夹或者文件 [default: .]
@@ -86,7 +90,7 @@ Options:
 代码目录结构如下：
 
 ```
-rloc
+cloc
 ├── build.rs               编译前执行的内容，用于生成代码
 ├── Cargo.lock
 ├── Cargo.toml             rust项目配置文件
