@@ -123,16 +123,16 @@ pub fn generate_code(data: Languages) -> String {
         #enm
         #re
 
-    type StaticStr = &'static str;
+        type StaticStr = &'static str;
 
-    impl LanguageType {
-        #lc
-        #mlc
-        #quotes
-        #qe
-        #vq
-        #ffe
-    }
+        impl LanguageType {
+            #lc
+            #mlc
+            #quotes
+            #qe
+            #vq
+            #ffe
+        }
 
     };
     result.to_string()
