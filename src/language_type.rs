@@ -3,6 +3,7 @@ use crate::state::{CodeState, LineType};
 include!(concat!(env!("OUT_DIR"), "/language_type.rs"));
 
 impl LanguageType {
+    /// 解析一行代码，返回状态和类型。
     pub fn parse_line(&self, line: &str, prev: CodeState) -> (CodeState, LineType) {
         let line = line.trim();
         if line.is_empty() {
