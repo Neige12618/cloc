@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 use clap::Parser;
 use counter::{count_lines, Counter};
@@ -13,21 +13,17 @@ mod state;
 mod table;
 mod walker;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
     let cli = cli::Cli::parse();
 
-    let path = cli.name.unwrap_or(".".to_string());
-
-    let dir_walker = DirWalker::new(PathBuf::from(path));
+    let dir_walker = DirWalker::new(PathBuf::from(cli.name));
 
     let result = dir_walker
         .iter()
         .filter_map(|f| LanguageType::from_file_extension(f.extension()?.to_str()?).map(|v| (v, f)))
-        .filter(|(lt, _)| *lt == LanguageType::Cpp)
+        .filter(|(lt, _)| *lt == LanguageType::from_str(&cli.target).unwrap_or(LanguageType::Cpp))
         .map(|(lt, f)| count_lines(&f, lt).unwrap())
         .fold(Counter::none(), |init, acc| init + acc);
 
     draw_table(&result);
-
-    Ok(())
 }
