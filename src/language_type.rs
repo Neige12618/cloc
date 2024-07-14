@@ -1,76 +1,6 @@
-use clap::ValueEnum;
-use once_cell::sync::Lazy;
-use regex::Regex;
-
 use crate::state::{CodeState, LineType};
 
-#[derive(PartialEq, Clone, Copy, ValueEnum)]
-pub enum LanguageType {
-    Cpp,
-    Ruby,
-}
-
-static CPP_QUOTE_RE: Lazy<Vec<Regex>> = Lazy::new(|| {
-    LanguageType::Cpp
-        .quotes()
-        .iter()
-        .map(|q| Regex::new(&format!("{}(.*?){}", q.0, q.1)).unwrap())
-        .collect()
-});
-static RUBY_QUOTE_RE: Lazy<Vec<Regex>> = Lazy::new(|| {
-    LanguageType::Ruby
-        .quotes()
-        .iter()
-        .map(|q| Regex::new(&format!("{}(.*?){}", q.0, q.1)).unwrap())
-        .collect()
-});
-
-type StaticStr = &'static str;
-
-impl LanguageType {
-    pub fn line_comment(&self) -> &'static [StaticStr] {
-        match self {
-            LanguageType::Cpp => &["//"],
-            LanguageType::Ruby => &["#"],
-        }
-    }
-
-    pub fn multi_line_comments(&self) -> &'static [(StaticStr, StaticStr)] {
-        match self {
-            LanguageType::Cpp => &[("/*", "*/")],
-            LanguageType::Ruby => &[("=begin", "=end")],
-        }
-    }
-
-    pub fn quotes(&self) -> &'static [(StaticStr, StaticStr)] {
-        match self {
-            LanguageType::Cpp => &[("\"", "\"")],
-            LanguageType::Ruby => &[("\"", "\""), ("'", "'")],
-        }
-    }
-
-    pub fn quotes_regex(&self) -> &'static Vec<Regex> {
-        match self {
-            LanguageType::Cpp => &CPP_QUOTE_RE,
-            LanguageType::Ruby => &RUBY_QUOTE_RE,
-        }
-    }
-
-    pub fn verbatim_quotes(&self) -> &'static [(StaticStr, StaticStr)] {
-        match self {
-            LanguageType::Cpp => &[("R\"(", ")\"")],
-            LanguageType::Ruby => &[],
-        }
-    }
-
-    pub fn from_file_extension(extension: &str) -> Option<Self> {
-        match extension {
-            "cc" | "cpp" | "cxx" | "c++" => Some(LanguageType::Cpp),
-            "rb" => Some(LanguageType::Ruby),
-            _ => None,
-        }
-    }
-}
+include!(concat!(env!("OUT_DIR"), "/language_type.rs"));
 
 impl LanguageType {
     pub fn parse_line(&self, line: &str, prev: CodeState) -> (CodeState, LineType) {
@@ -104,7 +34,7 @@ impl LanguageType {
                 let regex = self.quotes_regex();
                 let mut line = line.to_string();
                 for re in regex {
-                    line = re.replace_all(&line, "\"\"").to_string();
+                    line = re.replace_all(&line, "").to_string();
                 }
                 if self.line_comment().iter().any(|s| line.starts_with(s)) {
                     return (CodeState::Other, LineType::Comment);
