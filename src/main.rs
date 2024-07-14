@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
 
 use clap::Parser;
 use counter::{count_lines, Counter};
@@ -21,7 +21,7 @@ fn main() {
     let result = dir_walker
         .iter()
         .filter_map(|f| LanguageType::from_file_extension(f.extension()?.to_str()?).map(|v| (v, f)))
-        .filter(|(lt, _)| *lt == LanguageType::from_str(&cli.target).unwrap_or(LanguageType::Cpp))
+        .filter(|(lt, _)| *lt == cli.target)
         .map(|(lt, f)| count_lines(&f, lt).unwrap())
         .fold(Counter::none(), |init, acc| init + acc);
 

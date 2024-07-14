@@ -1,9 +1,10 @@
+use clap::ValueEnum;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::state::{CodeState, LineType};
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, ValueEnum)]
 pub enum LanguageType {
     Cpp,
     Ruby,
@@ -67,18 +68,6 @@ impl LanguageType {
             "cc" | "cpp" | "cxx" | "c++" => Some(LanguageType::Cpp),
             "rb" => Some(LanguageType::Ruby),
             _ => None,
-        }
-    }
-}
-
-impl std::str::FromStr for LanguageType {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "cpp" => Ok(LanguageType::Cpp),
-            "ruby" => Ok(LanguageType::Ruby),
-            _ => Err(()),
         }
     }
 }
