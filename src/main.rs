@@ -22,7 +22,7 @@ fn main() {
         .iter()
         .filter_map(|f| LanguageType::from_file_extension(f.extension()?.to_str()?).map(|v| (v, f)))
         .filter(|(lt, _)| *lt == cli.target)
-        .map(|(lt, f)| count_lines(&f, lt).unwrap())
+        .map(|(lt, f)| count_lines(&f, lt))
         .fold(Counter::none(), |init, acc| init + acc);
 
     draw_table(&result);

@@ -61,10 +61,13 @@ impl Counter {
     }
 }
 
-pub fn count_lines(path: &PathBuf, language_type: LanguageType) -> std::io::Result<Counter> {
-    let file = std::fs::File::open(path)?;
+pub fn count_lines(path: &PathBuf, language_type: LanguageType) -> Counter {
+    let file = match std::fs::File::open(path) {
+        Ok(file) => file,
+        Err(_) => return Counter::new(),
+    };
     let reader = std::io::BufReader::new(file);
-    count_lines_from_reader(reader, language_type)
+    count_lines_from_reader(reader, language_type).unwrap_or(Counter::new())
 }
 
 pub fn count_lines_from_reader<R>(
@@ -97,8 +100,7 @@ mod test {
         let counts = count_lines(
             &PathBuf::from_str(".test/example.cpp").unwrap(),
             crate::language_type::LanguageType::Cpp,
-        )
-        .unwrap();
+        );
         assert_eq!(counts.code, 5);
         assert_eq!(counts.comments, 9);
         assert_eq!(counts.blanks, 3);
