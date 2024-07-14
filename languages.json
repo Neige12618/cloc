@@ -17,6 +17,15 @@
         ["'", "'"]
       ],
       "extensions": ["rb"]
+    },
+    {
+      "name": "Python",
+      "line_comment": ["#"],
+      "quotes": [
+        ["\"", "\""],
+        ["'", "'"]
+      ],
+      "extensions": ["py"]
     }
   ]
 }
