@@ -52,17 +52,17 @@ cargo --version
 cargo install --path . --locked
 ```
 
-即可成功安装命令行工具`cloc`
+即可成功安装命令行工具`rloc`
 
-如果未能成功安装，运行`cargo b --release`之后在当前目录的 `target/release` 目录下找到 cloc 二进制文件即可。
+如果未能成功安装，运行`cargo b --release`之后在当前目录的 `target/release` 目录下找到 rloc 二进制文件即可。
 
 ## 使用
 
-运行`cloc --help`即可查看帮助信息。
+运行`rloc --help`即可查看帮助信息。
 
 ```bash
-$ cloc --help
-Usage: cloc [OPTIONS] [NAME]
+$ rloc --help
+Usage: rloc [OPTIONS] [NAME]
 
 Arguments:
   [NAME]  需要被计算代码行数的文件夹或者文件 [default: .]
@@ -90,7 +90,7 @@ Options:
 代码目录结构如下：
 
 ```
-cloc
+rloc
 ├── build.rs               编译前执行的内容，用于生成代码
 ├── Cargo.lock
 ├── Cargo.toml             rust项目配置文件
@@ -114,7 +114,7 @@ cloc
 
 实现过程中参考了 tokei，同时使用一些代码统计工具和此项目作对比。
 
-对于 [cloc](https://github.com/AlDanial/cloc)
+对于 [rloc](https://github.com/AlDanial/rloc)
 
 - 原始字符串中的注释会被识别为注释，而不是代码。
 
