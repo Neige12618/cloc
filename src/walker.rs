@@ -37,7 +37,7 @@ impl Iterator for DirWalkerIter {
 
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(path) = self.stack.pop() {
-            if path.is_dir() {
+            if path.is_dir() && !path.is_symlink() {
                 let entries = match fs::read_dir(&path) {
                     Ok(entries) => entries,
                     Err(_) => continue,
