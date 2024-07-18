@@ -27,5 +27,13 @@
       ],
       "extensions": ["py"]
     }
+    ,
+    {
+      "name":"JavaScript",
+      "line_comment": ["//"],
+      "multi_line_comments": [["/*", "*/"]],
+      "quotes": [["\"", "\""], ["'", "'"], ["`", "`"]],
+      "extensions": ["cjs", "js", "mjs"]
+    }
   ]
 }
