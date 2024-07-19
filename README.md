@@ -114,7 +114,7 @@ rloc
 
 实现过程中参考了 tokei，同时使用一些代码统计工具和此项目作对比。
 
-对于 [rloc](https://github.com/AlDanial/rloc)
+对于 [cloc](https://github.com/AlDanial/cloc)
 
 - 原始字符串中的注释会被识别为注释，而不是代码。
 
